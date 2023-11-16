@@ -11,7 +11,7 @@ class WebcamApp:
     def __init__(self, window, window_title):
         self.window = window
         self.window.title(window_title)
-        self.window.geometry("700x700")
+        self.window.geometry("800x800")
 
         # Create a button to capture an image
         self.capture_button = ttk.Button(self.window, text="Capture Image", command=self.capture_image)
@@ -21,8 +21,8 @@ class WebcamApp:
         self.open_folder_button = ttk.Button(self.window, text="Open Folder", command=self.open_folder)
         self.open_folder_button.pack(side=tk.BOTTOM, pady=10)
 
-        # Create a button to start the webcam
-        self.start_button = ttk.Button(self.window, text="Start", command=self.start_webcam)
+        # Create a button to start/stop the webcam
+        self.start_button = ttk.Button(self.window, text="Start", command=self.toggle_webcam)
         self.start_button.pack(side=tk.BOTTOM, pady=10)
 
         # Define the folder to save captured images
@@ -46,14 +46,40 @@ class WebcamApp:
         self.video_label.configure(image=black_imgtk)
         self.video_label.imgtk = black_imgtk
 
+        # Variable to track whether the webcam is currently running
+        self.webcam_running = False
+
+    def toggle_webcam(self):
+        # Toggle between starting and stopping the webcam
+        if not self.webcam_running:
+            self.start_webcam()
+        else:
+            self.stop_webcam()
+
     def start_webcam(self):
         # Start the webcam
         if self.cap is None or not self.cap.isOpened():
             self.cap = cv2.VideoCapture(0)
             messagebox.showinfo("Webcam Started", "Webcam is now running.")
+            self.webcam_running = True
             self.update()
+            self.start_button.config(text="Stop")
         else:
             messagebox.showinfo("Webcam Already Started", "Webcam is already running.")
+
+    def stop_webcam(self):
+        # Stop the webcam
+        if self.cap is not None and self.cap.isOpened():
+            self.cap.release()
+            messagebox.showinfo("Webcam Stopped", "Webcam has been stopped.")
+            self.webcam_running = False
+            self.start_button.config(text="Start")
+            # Display a black image when the webcam is stopped
+            black_image = np.zeros((480, 640, 3), dtype=np.uint8)
+            black_pil_image = Image.fromarray(black_image)
+            black_imgtk = ImageTk.PhotoImage(image=black_pil_image)
+            self.video_label.imgtk = black_imgtk
+            self.video_label.configure(image=black_imgtk, background="dark gray")
 
     def update(self):
         # Get a frame from the webcam
@@ -72,16 +98,10 @@ class WebcamApp:
             # Update the label with the new PhotoImage and set the background color
             self.video_label.imgtk = imgtk
             self.video_label.configure(image=imgtk, background="dark gray")
-        else:
-            # Display a black image if the webcam is not capturing frames
-            black_image = np.zeros((480, 640, 3), dtype=np.uint8)
-            black_pil_image = Image.fromarray(black_image)
-            black_imgtk = ImageTk.PhotoImage(image=black_pil_image)
-            self.video_label.imgtk = black_imgtk
-            self.video_label.configure(image=black_imgtk, background="dark gray")
 
-        # Repeat this process after 10 milliseconds
-        self.window.after(10, self.update)
+        # Repeat this process after 10 milliseconds if the webcam is running
+        if self.webcam_running:
+            self.window.after(10, self.update)
 
     def capture_image(self):
         # Get a frame from the webcam
