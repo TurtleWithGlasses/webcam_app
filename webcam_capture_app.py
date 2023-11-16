@@ -11,18 +11,21 @@ class WebcamApp:
     def __init__(self, window, window_title):
         self.window = window
         self.window.title(window_title)
-        self.window.geometry("800x800")
+        self.window.geometry("700x700")
+
+        self.style = ttk.Style()
+        self.style.theme_use("vista")
 
         # Create a button to capture an image
-        self.capture_button = ttk.Button(self.window, text="Capture Image", command=self.capture_image)
+        self.capture_button = ttk.Button(self.window, text="Capture Image", command=self.capture_image, style="TButton")
         self.capture_button.pack(side=tk.BOTTOM, pady=10)
 
         # Create a button to open the folder
-        self.open_folder_button = ttk.Button(self.window, text="Open Folder", command=self.open_folder)
+        self.open_folder_button = ttk.Button(self.window, text="Open Folder", command=self.open_folder, style="TButton")
         self.open_folder_button.pack(side=tk.BOTTOM, pady=10)
 
         # Create a button to start/stop the webcam
-        self.start_button = ttk.Button(self.window, text="Start", command=self.toggle_webcam)
+        self.start_button = ttk.Button(self.window, text="Start", command=self.toggle_webcam, style="TButton")
         self.start_button.pack(side=tk.BOTTOM, pady=10)
 
         # Define the folder to save captured images
@@ -127,6 +130,7 @@ class WebcamApp:
 
 # Create the main window
 root = tk.Tk()
+root.configure(bg="gray")
 app = WebcamApp(root, "Webcam App")
 
 # Run the Tkinter event loop
